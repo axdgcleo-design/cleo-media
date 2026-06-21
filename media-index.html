@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cleo Studio">
+<meta name="theme-color" content="#1C1A17">
+<title>Cleo Studio</title>
+<style>
+:root {
+  --cream: #F7F3EE; --warm: #FDFAF7; --ink: #1C1A17;
+  --ink-l: #5C574F; --ink-m: #9C9289; --border: #E5DDD4;
+  --rose: #C4715A; --rose-l: #F0DDD7;
+  --sage: #7A9E8A; --gold: #B8962E; --gold-l: #F2E9D0;
+  --nav: 64px; --hdr: 52px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html,body { height: 100%; overflow: hidden; font-family: -apple-system,"Helvetica Neue",sans-serif; background: var(--cream); color: var(--ink); }
+
+/* HEADER */
+.hdr { position: fixed; top: 0; left: 0; right: 0; height: var(--hdr); background: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; padding-top: env(safe-area-inset-top,0); z-index: 99; }
+.hdr-title { font-size: 16px; font-weight: 500; color: var(--cream); letter-spacing: 0.05em; }
+.hdr-date { font-size: 11px; color: var(--ink-m); }
+
+/* SCROLL BODY */
+.body { position: fixed; top: var(--hdr); bottom: calc(var(--nav) + env(safe-area-inset-bottom,0px)); left: 0; right: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+/* PANELS */
+.panel { display: none; padding: 14px 14px 28px; }
+.panel.on { display: block; }
+
+/* BOTTOM NAV */
+.nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav) + env(safe-area-inset-bottom,0px)); background: var(--warm); border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom,0px); z-index: 99; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; cursor: pointer; color: var(--ink-m); padding-top: 6px; }
+.nav-btn.on { color: var(--rose); }
+.nav-ic { font-size: 21px; line-height: 1; }
+.nav-lb { font-size: 10px; letter-spacing: 0.03em; }
+
+/* CARD */
+.card { background: var(--warm); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.lbl { font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-m); margin-bottom: 9px; }
+
+/* ACCOUNT PILLS */
+.acct-row { display: flex; gap: 9px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 2px; }
+.acct-btn { display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 22px; border: 1.5px solid var(--border); background: var(--warm); font-size: 13px; color: var(--ink-l); white-space: nowrap; cursor: pointer; transition: all .15s; }
+.acct-btn.on { background: var(--ink); border-color: var(--ink); color: var(--cream); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rose); flex-shrink: 0; }
+
+/* INPUTS */
+textarea, input[type=text], input[type=url] { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; font-family: -apple-system,"Helvetica Neue",sans-serif; font-size: 15px; color: var(--ink); background: var(--cream); outline: none; -webkit-appearance: none; transition: border-color .15s; }
+textarea:focus, input:focus { border-color: var(--rose); }
+textarea { resize: none; min-height: 96px; line-height: 1.5; }
+
+/* TOGGLES */
+.plat-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 7px; }
+.ptog { padding: 9px 14px; border-radius: 19px; border: 1.5px solid var(--border); background: var(--cream); font-size: 13px; color: var(--ink-l); cursor: pointer; user-select: none; transition: all .15s; }
+.ptog.on { background: var(--rose-l); border-color: var(--rose); color: var(--rose); font-weight: 600; }
+
+/* TYPE GRID */
+.tgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 7px; }
+.topt { padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; background: var(--cream); transition: all .15s; }
+.topt.on { border-color: var(--rose); background: var(--rose-l); }
+.topt h4 { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+.topt p { font-size: 11px; color: var(--ink-m); line-height: 1.3; }
+.topt.on h4 { color: var(--rose); }
+
+/* BUTTONS */
+.btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 15px; font-weight: 500; letter-spacing: 0.05em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background .15s; }
+.btn-ink { background: var(--ink); color: var(--cream); }
+.btn-ink:active { background: var(--rose); }
+.btn-ink:disabled { opacity: .4; }
+.btn-sage { background: var(--sage); color: white; }
+.btn-sage:active { background: #5E8A72; }
+.btn-sage:disabled { opacity: .4; }
+
+/* LOADING */
+.bar { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 12px 0; display: none; }
+.bar.on { display: block; }
+.bar-fill { height: 100%; background: linear-gradient(90deg,var(--rose),var(--gold)); animation: ld 1.8s ease-in-out infinite; }
+@keyframes ld { 0%{width:0;margin-left:0} 50%{width:60%;margin-left:20%} 100%{width:0;margin-left:100%} }
+
+/* OUTPUT */
+.out-sec { margin-top: 18px; display: none; }
+.out-sec.on { display: block; }
+.out-card { background: var(--warm); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.out-hd { padding: 11px 15px; background: var(--ink); display: flex; align-items: center; justify-content: space-between; }
+.out-plat { font-size: 12px; color: var(--cream); display: flex; align-items: center; gap: 6px; letter-spacing: 0.08em; }
+.copy-btn { font-size: 12px; color: var(--ink-m); background: none; border: 1px solid #3A3832; padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+.copy-btn.ok { background: var(--sage); border-color: var(--sage); color: white; }
+.out-body { padding: 15px; font-size: 14px; line-height: 1.75; white-space: pre-wrap; }
+
+/* UPLOAD AREA */
+.up-area { border: 2px dashed var(--border); border-radius: 12px; padding: 26px 14px; text-align: center; cursor: pointer; background: var(--cream); display: block; }
+.up-area input { display: none; }
+.up-area:active { border-color: var(--rose); background: var(--rose-l); }
+.up-ic { font-size: 28px; margin-bottom: 5px; }
+.up-tx { font-size: 13px; color: var(--ink-l); }
+.up-sub { font-size: 11px; color: var(--ink-m); margin-top: 3px; }
+
+/* IMG GRID */
+.ig { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; margin-top: 10px; }
+.ig-item { aspect-ratio: 1; border-radius: 8px; overflow: hidden; position: relative; background: var(--border); }
+.ig-item img { width: 100%; height: 100%; object-fit: cover; }
+.ig-rm { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; border-radius: 50%; background: rgba(28,26,23,.7); color: white; border: none; font-size: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+/* ROW ADD */
+.row-add { display: flex; gap: 8px; margin-bottom: 8px; }
+.row-add input { flex: 1; }
+.btn-add { padding: 0 16px; background: var(--ink); color: var(--cream); border: none; border-radius: 10px; font-size: 15px; cursor: pointer; flex-shrink: 0; min-height: 46px; }
+.btn-add:active { background: var(--rose); }
+
+/* URL LIST */
+.url-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+.url-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; font-size: 12px; color: var(--ink-l); }
+.url-item span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.url-item button { background: none; border: none; color: var(--ink-m); font-size: 16px; cursor: pointer; padding: 0 3px; }
+
+/* TAGS */
+.tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 7px; }
+.tag { padding: 6px 12px; background: var(--gold-l); border: 1px solid var(--gold); border-radius: 16px; font-size: 12px; color: var(--gold); display: flex; align-items: center; gap: 5px; }
+.tag button { background: none; border: none; color: inherit; font-size: 15px; cursor: pointer; padding: 0; line-height: 1; }
+.tag.rose { background: var(--rose-l); border-color: var(--rose); color: var(--rose); }
+
+/* INSPO RESULT */
+.inspo-out { background: var(--warm); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-top: 14px; display: none; }
+.inspo-out.on { display: block; }
+.inspo-out h3 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.inspo-out p { font-size: 14px; line-height: 1.75; white-space: pre-wrap; }
+
+/* SEC TITLE */
+.sec { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-m); margin: 18px 0 10px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+
+/* ACCT FORM UPLOAD */
+.acct-up { height: 130px; border: 2px dashed var(--border); border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; background: var(--cream); margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+.acct-up input { display: none; }
+.acct-preview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+
+/* FILTER */
+.filter-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+.fbtn { padding: 8px 13px; border-radius: 17px; border: 1.5px solid var(--border); background: var(--cream); font-size: 12px; color: var(--ink-m); cursor: pointer; }
+.fbtn.on { background: var(--rose-l); border-color: var(--rose); color: var(--rose); font-weight: 600; }
+
+/* ACCT CARDS */
+.acct-list { display: flex; flex-direction: column; gap: 11px; }
+.acct-card { background: var(--warm); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.acct-thumb { height: 120px; background: var(--border); position: relative; overflow: hidden; }
+.acct-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.acct-badge { position: absolute; top: 7px; left: 7px; background: rgba(28,26,23,.75); color: white; padding: 3px 9px; border-radius: 11px; font-size: 11px; }
+.acct-no-thumb { height: 46px; background: var(--ink); display: flex; align-items: center; padding: 0 14px; gap: 7px; }
+.acct-body { padding: 11px 13px; display: flex; flex-direction: column; gap: 5px; }
+.acct-handle { font-size: 15px; font-weight: 600; }
+.acct-meta { font-size: 12px; color: var(--ink-m); }
+.acct-bio { font-size: 13px; color: var(--ink-l); line-height: 1.45; }
+.acct-style-txt { font-size: 12px; color: var(--ink-m); font-style: italic; line-height: 1.35; }
+.acct-note-box { font-size: 12px; color: var(--ink-m); background: var(--cream); padding: 6px 9px; border-radius: 7px; line-height: 1.4; }
+.acct-footer { padding: 0 13px 12px; display: flex; gap: 7px; }
+.acct-link { flex: 1; padding: 9px; background: var(--ink); color: var(--cream); border-radius: 8px; font-size: 13px; text-align: center; text-decoration: none; }
+.acct-del { padding: 9px 13px; background: none; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--ink-m); cursor: pointer; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 44px 14px; color: var(--ink-m); }
+.empty-ic { font-size: 34px; margin-bottom: 9px; }
+.empty p { font-size: 13px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title">✦ Cleo Studio</div>
+  <div class="hdr-date" id="dateBadge"></div>
+</div>
+
+<div class="body">
+
+  <!-- 今日文案 -->
+  <div class="panel on" id="panel-generate">
+    <div class="acct-row">
+      <button class="acct-btn on" onclick="selAcct('cleo',this)"><span class="dot"></span>@cleo.o8o8</button>
+      <button class="acct-btn" onclick="selAcct('commerce',this)"><span class="dot" style="background:var(--gold)"></span>商業導流</button>
+    </div>
+    <div class="card">
+      <div class="lbl">今天的主題 / 素材</div>
+      <textarea id="topicInput" placeholder="業主的一句話、一個設計決定、材料故事…" rows="4"></textarea>
+    </div>
+    <div class="card">
+      <div class="lbl">產出平台</div>
+      <div class="plat-row">
+        <div class="ptog on" onclick="togPlat(this,'threads')">🧵 Threads</div>
+        <div class="ptog on" onclick="togPlat(this,'ig')">📸 IG 貼文</div>
+        <div class="ptog on" onclick="togPlat(this,'reels')">🎬 Reels</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl">內容類型</div>
+      <div class="tgrid" id="typeGrid"></div>
+    </div>
+    <button class="btn btn-ink" id="genBtn" onclick="generate()">✦ 產出文案</button>
+    <div class="bar" id="genBar"><div class="bar-fill"></div></div>
+    <div class="out-sec" id="outSec">
+      <div class="lbl" style="margin-bottom:8px">產出結果</div>
+      <div id="outCards"></div>
+    </div>
+  </div>
+
+  <!-- 靈感庫 -->
+  <div class="panel" id="panel-inspiration">
+    <div class="sec">收集靈感</div>
+    <div class="card">
+      <div class="lbl">上傳圖片</div>
+      <label class="up-area">
+        <input type="file" accept="image/*" multiple onchange="addInspoImg(event)">
+        <div class="up-ic">🖼</div>
+        <div class="up-tx">點擊上傳截圖或照片</div>
+        <div class="up-sub">設計參考、IG 截圖都可以</div>
+      </label>
+      <div class="ig" id="inspoGrid"></div>
+    </div>
+    <div class="card">
+      <div class="lbl">收藏網址</div>
+      <div class="row-add"><input type="url" id="urlIn" placeholder="貼上 IG、Pinterest 網址…"><button class="btn-add" onclick="addUrl()">+</button></div>
+      <div class="url-list" id="urlList"></div>
+    </div>
+    <div class="card">
+      <div class="lbl">關鍵字標籤</div>
+      <div class="row-add"><input type="text" id="kwIn" placeholder="輸入關鍵字，Enter 加入" onkeydown="if(event.key==='Enter'){addKw();event.preventDefault();}"><button class="btn-add" onclick="addKw()">+</button></div>
+      <div class="tags" id="kwTags"></div>
+    </div>
+    <div class="sec">分析靈感</div>
+    <div class="card">
+      <div class="lbl">分析方向</div>
+      <div class="tgrid">
+        <div class="topt on" onclick="selInspo(this,'content-ideas')"><h4>💡 內容創意</h4><p>提煉可拍影片主題</p></div>
+        <div class="topt" onclick="selInspo(this,'style-analysis')"><h4>🎨 風格分析</h4><p>色彩、氛圍關鍵字</p></div>
+        <div class="topt" onclick="selInspo(this,'caption-idea')"><h4>✍️ 文案方向</h4><p>靈感轉化成文案</p></div>
+        <div class="topt" onclick="selInspo(this,'trend-spot')"><h4>📊 趨勢觀察</h4><p>整理共同規律</p></div>
+      </div>
+      <textarea id="inspoNote" placeholder="補充：用在哪個帳號？特別想關注什麼？" rows="3" style="margin-top:10px;"></textarea>
+      <button class="btn btn-sage" id="analyzeBtn" onclick="analyze()" style="margin-top:10px;">◈ 分析靈感</button>
+      <div class="bar" id="analyzeBar"><div class="bar-fill"></div></div>
+    </div>
+    <div class="inspo-out" id="inspoOut"><h3>分析結果</h3><p id="inspoOutTxt"></p></div>
+  </div>
+
+  <!-- 帳號庫 -->
+  <div class="panel" id="panel-accounts">
+    <div class="sec">新增帳號</div>
+    <div class="card">
+      <label class="acct-up" id="acctUpWrap">
+        <input type="file" accept="image/*" id="acctImgIn" onchange="addAcctImg(event)">
+        <img id="acctPreview" class="acct-preview">
+        <div class="up-ic" id="acctUpIc">📷</div>
+        <div class="up-tx" id="acctUpTx">上傳帳號截圖</div>
+        <div class="up-sub">AI 自動辨識平台與帳號資訊</div>
+      </label>
+      <div class="lbl">帳號連結（選填）</div>
+      <input type="url" id="acctUrl" placeholder="https://www.instagram.com/xxx" style="margin-bottom:10px;">
+      <div class="lbl">為什麼收藏？</div>
+      <input type="text" id="acctNote" placeholder="喜歡他的文案節奏、視覺構圖…" style="margin-bottom:10px;">
+      <div class="lbl">標籤</div>
+      <div class="row-add" style="margin-bottom:7px;"><input type="text" id="acctTagIn" placeholder="輸入標籤，Enter 加入" onkeydown="if(event.key==='Enter'){addAcctTag();event.preventDefault();}"><button class="btn-add" onclick="addAcctTag()">+</button></div>
+      <div class="tags" id="acctTagPrev" style="margin-bottom:12px;"></div>
+      <button class="btn btn-ink" id="acctSaveBtn" onclick="saveAcct()">✦ AI 辨識並儲存</button>
+      <div class="bar" id="acctBar"><div class="bar-fill"></div></div>
+    </div>
+    <div class="sec">我的帳號庫</div>
+    <div class="filter-row">
+      <button class="fbtn on" onclick="filterAcct(this,'all')" data-p="all">全部</button>
+      <button class="fbtn" onclick="filterAcct(this,'ig')" data-p="ig">📸 Instagram</button>
+      <button class="fbtn" onclick="filterAcct(this,'xhs')" data-p="xhs">📕 小紅書</button>
+    </div>
+    <input type="text" id="acctSearch" placeholder="搜尋帳號名稱或標籤…" oninput="renderAccts()" style="margin-bottom:12px;">
+    <div class="acct-list" id="acctList"></div>
+    <div class="empty" id="acctEmpty" style="display:none;"><div class="empty-ic">◉</div><p>還沒有收藏的帳號<br>上傳截圖開始收集</p></div>
+  </div>
+
+</div>
+
+<nav class="nav">
+  <button class="nav-btn on" onclick="switchTab('generate',this)"><span class="nav-ic">✦</span><span class="nav-lb">今日文案</span></button>
+  <button class="nav-btn" onclick="switchTab('inspiration',this)"><span class="nav-ic">◈</span><span class="nav-lb">靈感庫</span></button>
+  <button class="nav-btn" onclick="switchTab('accounts',this)"><span class="nav-ic">◉</span><span class="nav-lb">帳號庫</span></button>
+</nav>
+
+<script>
+// STATE
+let curAcct='cleo', selPlats=new Set(['threads','ig','reels']), selType='story', selInspoType='content-ideas';
+let inspoImgs=[], inspoUrls=[], inspoKws=[];
+let savedAccts=JSON.parse(localStorage.getItem('cleoAccts')||'[]');
+let acctImg=null, acctTags=[], acctFilter='all';
+
+// DATE
+const DN=['日','一','二','三','四','五','六'], now=new Date();
+document.getElementById('dateBadge').textContent=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} 週${DN[now.getDay()]}`;
+
+// NAV
+function switchTab(tab,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+tab).classList.add('on');
+  btn.classList.add('on');
+  document.querySelector('.body').scrollTop=0;
+}
+
+// ACCOUNT / TYPES
+const CT=[{id:'story',t:'📖 長敘事型 A',d:'業主故事 45–60 秒'},{id:'tips',t:'📌 短重點型 B',d:'設計觀點 15–30 秒'},{id:'hook',t:'✦ 衝突開頭',d:'鉤子句測試反差'},{id:'quote',t:'💬 金句觀點',d:'適合限動引用'}];
+const MT=[{id:'promo',t:'🛒 促銷導購',d:'刺激點擊下單'},{id:'social-proof',t:'⭐ 社群驗證',d:'真實故事建信任'},{id:'pain-point',t:'😫 痛點喚醒',d:'戳中痛點給解方'},{id:'value',t:'💎 價值展示',d:'突顯差異賣點'}];
+
+function renderTypes(acct){
+  const ts=acct==='cleo'?CT:MT;
+  document.getElementById('typeGrid').innerHTML=ts.map(t=>`<div class="topt ${t.id===selType?'on':''}" onclick="selTypeF(this,'${t.id}')"><h4>${t.t}</h4><p>${t.d}</p></div>`).join('');
+  if(!ts.find(t=>t.id===selType)){selType=ts[0].id;document.querySelector('#typeGrid .topt')?.classList.add('on');}
+}
+function selAcct(a,btn){curAcct=a;document.querySelectorAll('.acct-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderTypes(a);document.getElementById('outSec').classList.remove('on');}
+function selTypeF(el,t){document.querySelectorAll('#typeGrid .topt').forEach(o=>o.classList.remove('on'));el.classList.add('on');selType=t;}
+function selInspo(el,t){document.querySelectorAll('#panel-inspiration .topt').forEach(o=>o.classList.remove('on'));el.classList.add('on');selInspoType=t;}
+function togPlat(el,p){el.classList.toggle('on');el.classList.contains('on')?selPlats.add(p):selPlats.delete(p);}
+
+// SYSTEM PROMPTS
+function sysP(){
+  if(curAcct==='cleo') return `你是 Cleo（@cleo.o8o8）的 AI 內容助理。Cleo 是台灣室內設計師，核心定位是「會說故事的設計師」。風格：情感克制有溫度，不誇張不用emoji，業主故事是主角，金句要短有節奏。語言：台灣繁體中文，口語不輕浮。長敘事：衝突→業主畫像→設計推理→業主原話→金句。短重點：反差破題→3-4重點→金句。Threads：1-3句有觀點。IG：衝突鉤子→背景→觀點→原話→金句→hashtag。Reels：標明秒數分段清楚。`;
+  return `你是台灣商業帳號文案專家，寫高轉換率導流內容。風格：直接有力口語，痛點→解方→CTA，適當用emoji。語言：台灣繁體中文。Threads：1-3句製造好奇。IG：痛點→故事→解方→CTA→hashtag。Reels：3秒鉤子→確認問題→解方→CTA，標明秒數。`;
+}
+
+// GENERATE
+async function generate(){
+  const t=document.getElementById('topicInput').value.trim();
+  if(!t){alert('請輸入今天的主題！');return;}
+  if(!selPlats.size){alert('請至少選一個平台！');return;}
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;btn.textContent='⏳ 生成中…';
+  document.getElementById('genBar').classList.add('on');
+  document.getElementById('outSec').classList.remove('on');
+  const pn={threads:'Threads長文',ig:'IG貼文',reels:'Reels腳本'};
+  const tl=document.querySelector('#typeGrid .topt.on h4')?.textContent||'';
+  const pl=[...selPlats].map(p=>pn[p]).join('、');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sysP(),messages:[{role:'user',content:`帳號：${curAcct==='cleo'?'@cleo.o8o8 室內設計':'商業導流'}
+類型：${tl}
+主題：${t}
+
+產出：${pl}
+
+每個平台用 ===平台名=== 分隔。`}]})});
+    const d=await r.json();
+    renderOut(d.content?.find(c=>c.type==='text')?.text||'');
+  }catch(e){alert('發生錯誤，請重試');}
+  btn.disabled=false;btn.textContent='✦ 產出文案';
+  document.getElementById('genBar').classList.remove('on');
+}
+
+function renderOut(text){
+  const secs=text.split(/===(.+?)===/).filter(s=>s.trim());
+  const wrap=document.getElementById('outCards');
+  wrap.innerHTML=secs.length<=1?mkCard('全部內容','✦',text.trim()):(() =>{let h='';for(let i=0;i<secs.length;i+=2){const l=secs[i]?.trim()||'',c=secs[i+1]?.trim()||'';if(c)h+=mkCard(l,l.includes('Threads')?'🧵':l.includes('IG')?'📸':l.includes('Reels')?'🎬':'✦',c);}return h;})();
+  document.getElementById('outSec').classList.add('on');
+}
+function mkCard(l,ic,c){const id='c_'+Math.random().toString(36).slice(2,7);return `<div class="out-card"><div class="out-hd"><div class="out-plat"><span>${ic}</span>${l}</div><button class="copy-btn" id="b_${id}" onclick="cp('${id}','b_${id}')">複製</button></div><div class="out-body" id="${id}">${esc(c)}</div></div>`;}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function cp(cid,bid){navigator.clipboard.writeText(document.getElementById(cid).textContent).then(()=>{const b=document.getElementById(bid);b.textContent='已複製 ✓';b.classList.add('ok');setTimeout(()=>{b.textContent='複製';b.classList.remove('ok');},2000);});}
+
+// INSPO IMGS
+function addInspoImg(e){[...e.target.files].forEach(f=>{const r=new FileReader();r.onload=ev=>{inspoImgs.push({n:f.name,d:ev.target.result});renderInspoGrid();};r.readAsDataURL(f);});}
+function renderInspoGrid(){document.getElementById('inspoGrid').innerHTML=inspoImgs.map((img,i)=>`<div class="ig-item"><img src="${img.d}"><button class="ig-rm" onclick="inspoImgs.splice(${i},1);renderInspoGrid()">×</button></div>`).join('');}
+
+// URLS
+function addUrl(){const el=document.getElementById('urlIn'),u=el.value.trim();if(!u)return;inspoUrls.push(u);el.value='';renderUrls();}
+function renderUrls(){document.getElementById('urlList').innerHTML=inspoUrls.map((u,i)=>`<div class="url-item"><span>🔗 ${u}</span><button onclick="inspoUrls.splice(${i},1);renderUrls()">×</button></div>`).join('');}
+
+// KEYWORDS
+function addKw(){const el=document.getElementById('kwIn'),k=el.value.trim();if(!k)return;inspoKws.push(k);el.value='';renderKws();}
+function renderKws(){document.getElementById('kwTags').innerHTML=inspoKws.map((k,i)=>`<div class="tag">${k}<button onclick="inspoKws.splice(${i},1);renderKws()">×</button></div>`).join('');}
+
+// ANALYZE
+async function analyze(){
+  const note=document.getElementById('inspoNote').value.trim();
+  if(!inspoImgs.length&&!inspoUrls.length&&!inspoKws.length&&!note){alert('請先加入一些靈感素材！');return;}
+  const btn=document.getElementById('analyzeBtn');btn.disabled=true;btn.textContent='⏳ 分析中…';
+  document.getElementById('analyzeBar').classList.add('on');document.getElementById('inspoOut').classList.remove('on');
+  const tl={'content-ideas':'內容創意','style-analysis':'風格分析','caption-idea':'文案方向','trend-spot':'趨勢觀察'};
+  let p=`請針對靈感素材進行「${tl[selInspoType]}」分析。
+`;
+  if(inspoKws.length)p+=`
+關鍵字：${inspoKws.join('、')}`;
+  if(inspoUrls.length)p+=`
+網址：
+${inspoUrls.join('\n')}`;
+  if(note)p+=`
+說明：${note}`;
+  p+=`
+
+我是台灣室內設計師 Cleo（@cleo.o8o8），定位是「會說故事的設計師」。請給出具體可執行建議。`;
+  let uc=[{type:'text',text:p}];
+  inspoImgs.slice(0,3).forEach(img=>{const mt=img.d.split(';')[0].split(':')[1];uc.push({type:'image',source:{type:'base64',media_type:mt,data:img.d.split(',')[1]}});});
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'你是 Cleo 的內容策略助理，台灣室內設計師。請用繁體中文具體分析靈感素材。',messages:[{role:'user',content:uc}]})});const d=await r.json();document.getElementById('inspoOutTxt').textContent=d.content?.find(c=>c.type==='text')?.text||'分析失敗';document.getElementById('inspoOut').classList.add('on');}catch(e){alert('發生錯誤，請重試');}
+  btn.disabled=false;btn.textContent='◈ 分析靈感';document.getElementById('analyzeBar').classList.remove('on');
+}
+
+// ACCT IMG
+function addAcctImg(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{acctImg=ev.target.result;const p=document.getElementById('acctPreview');p.src=acctImg;p.style.display='block';document.getElementById('acctUpIc').style.display='none';document.getElementById('acctUpTx').style.display='none';};r.readAsDataURL(f);}
+
+// ACCT TAGS
+function addAcctTag(){const el=document.getElementById('acctTagIn'),t=el.value.trim();if(!t||acctTags.includes(t))return;acctTags.push(t);el.value='';renderAcctTags();}
+function renderAcctTags(){document.getElementById('acctTagPrev').innerHTML=acctTags.map((t,i)=>`<div class="tag rose">${t}<button onclick="acctTags.splice(${i},1);renderAcctTags()">×</button></div>`).join('');}
+
+// SAVE ACCT
+async function saveAcct(){
+  const url=document.getElementById('acctUrl').value.trim(),note=document.getElementById('acctNote').value.trim();
+  if(!acctImg&&!url){alert('請上傳截圖或貼上連結！');return;}
+  const btn=document.getElementById('acctSaveBtn');btn.disabled=true;btn.textContent='⏳ AI 辨識中…';
+  document.getElementById('acctBar').classList.add('on');
+  let uc=[],p=`分析這個社群帳號，只回 JSON 不要其他文字：
+{"platform":"ig或xhs或other","handle":"帳號名","display_name":"顯示名稱","bio_summary":"定位一句話(20字內繁中)","content_style":"內容風格(30字內繁中)","followers_estimate":"粉絲數或空字串"}`;
+  if(url)p+=`
+連結：${url}`;if(note)p+=`
+備註：${note}`;
+  uc.push({type:'text',text:p});
+  if(acctImg){const mt=acctImg.split(';')[0].split(':')[1];uc.push({type:'image',source:{type:'base64',media_type:mt,data:acctImg.split(',')[1]}});}
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:uc}]})});
+    const d=await r.json();const raw=d.content?.find(c=>c.type==='text')?.text||'{}'
+    let pr={};try{pr=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
+    savedAccts.unshift({id:Date.now(),platform:pr.platform||(url.includes('instagram')?'ig':url.includes('xiaohongshu')?'xhs':'other'),handle:pr.handle||url||'未知帳號',display_name:pr.display_name||'',bio_summary:pr.bio_summary||'',content_style:pr.content_style||'',followers_estimate:pr.followers_estimate||'',url,note,tags:[...acctTags],thumbnail:acctImg,saved_at:new Date().toLocaleDateString('zh-TW')});
+    localStorage.setItem('cleoAccts',JSON.stringify(savedAccts));
+    acctImg=null;acctTags=[];
+    ['acctUrl','acctNote','acctTagIn'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('acctImgIn').value='';document.getElementById('acctTagPrev').innerHTML='';
+    const pv=document.getElementById('acctPreview');pv.style.display='none';pv.src='';
+    document.getElementById('acctUpIc').style.display='';document.getElementById('acctUpTx').style.display='';
+    renderAccts();
+  }catch(e){alert('發生錯誤，請重試');}
+  btn.disabled=false;btn.textContent='✦ AI 辨識並儲存';document.getElementById('acctBar').classList.remove('on');
+}
+
+// FILTER
+function filterAcct(el,p){document.querySelectorAll('[data-p]').forEach(b=>b.classList.remove('on'));el.classList.add('on');acctFilter=p;renderAccts();}
+
+// RENDER ACCTS
+function renderAccts(){
+  const q=(document.getElementById('acctSearch')?.value||'').toLowerCase();
+  const list=savedAccts.filter(a=>{const mp=acctFilter==='all'||a.platform===acctFilter;const ms=!q||[a.handle,a.display_name,...(a.tags||[])].some(v=>v?.toLowerCase().includes(q));return mp&&ms;});
+  const el=document.getElementById('acctList'),em=document.getElementById('acctEmpty');
+  if(!list.length){el.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  const pi={ig:'📸',xhs:'📕',other:'🌐'},pl={ig:'Instagram',xhs:'小紅書',other:'其他'};
+  el.innerHTML=list.map(a=>`<div class="acct-card">${a.thumbnail?`<div class="acct-thumb"><img src="${a.thumbnail}"><div class="acct-badge">${pi[a.platform]||'🌐'} ${pl[a.platform]||''}</div></div>`:`<div class="acct-no-thumb"><span style="font-size:18px">${pi[a.platform]||'🌐'}</span><span style="font-size:12px;color:var(--cream)">${pl[a.platform]||''}</span></div>`}<div class="acct-body"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:5px;"><div class="acct-handle">${a.handle}</div><div style="font-size:10px;color:var(--ink-m);white-space:nowrap">${a.saved_at}</div></div>${a.display_name?`<div class="acct-meta">${a.display_name}</div>`:''}${a.bio_summary?`<div class="acct-bio">${a.bio_summary}</div>`:''}${a.content_style?`<div class="acct-style-txt">${a.content_style}</div>`:''}${a.followers_estimate?`<div style="font-size:11px;color:var(--sage)">👥 ${a.followers_estimate}</div>`:''}${a.note?`<div class="acct-note-box">📝 ${a.note}</div>`:''}${a.tags?.length?`<div class="tags">${a.tags.map(t=>`<div class="tag rose" style="padding:4px 10px;">${t}</div>`).join('')}</div>`:''}</div><div class="acct-footer">${a.url?`<a href="${a.url}" target="_blank" class="acct-link">前往帳號 ↗</a>`:''}<button class="acct-del" onclick="delAcct(${a.id})">刪除</button></div></div>`).join('');
+}
+function delAcct(id){savedAccts=savedAccts.filter(a=>a.id!==id);localStorage.setItem('cleoAccts',JSON.stringify(savedAccts));renderAccts();}
+
+// INIT
+renderTypes('cleo');renderAccts();
+</script>
+</body>
+</html>
