@@ -336,7 +336,7 @@ async function generate(){
   const tl=document.querySelector('#typeGrid .topt.on h4')?.textContent||'';
   const pl=[...selPlats].map(p=>pn[p]).join('、');
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sysP(),messages:[{role:'user',content:`帳號：${curAcct==='cleo'?'@cleo.o8o8 室內設計':'商業導流'}
+    const r=await fetch('https://cleo-api.axdg-cleo.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sysP(),messages:[{role:'user',content:`帳號：${curAcct==='cleo'?'@cleo.o8o8 室內設計':'商業導流'}
 類型：${tl}
 主題：${t}
 
@@ -393,7 +393,7 @@ ${inspoUrls.join('\n')}`;
 我是台灣室內設計師 Cleo（@cleo.o8o8），定位是「會說故事的設計師」。請給出具體可執行建議。`;
   let uc=[{type:'text',text:p}];
   inspoImgs.slice(0,3).forEach(img=>{const mt=img.d.split(';')[0].split(':')[1];uc.push({type:'image',source:{type:'base64',media_type:mt,data:img.d.split(',')[1]}});});
-  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'你是 Cleo 的內容策略助理，台灣室內設計師。請用繁體中文具體分析靈感素材。',messages:[{role:'user',content:uc}]})});const d=await r.json();document.getElementById('inspoOutTxt').textContent=d.content?.find(c=>c.type==='text')?.text||'分析失敗';document.getElementById('inspoOut').classList.add('on');}catch(e){alert('發生錯誤，請重試');}
+  try{const r=await fetch('https://cleo-api.axdg-cleo.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:'你是 Cleo 的內容策略助理，台灣室內設計師。請用繁體中文具體分析靈感素材。',messages:[{role:'user',content:uc}]})});const d=await r.json();document.getElementById('inspoOutTxt').textContent=d.content?.find(c=>c.type==='text')?.text||'分析失敗';document.getElementById('inspoOut').classList.add('on');}catch(e){alert('發生錯誤，請重試');}
   btn.disabled=false;btn.textContent='◈ 分析靈感';document.getElementById('analyzeBar').classList.remove('on');
 }
 
@@ -418,7 +418,7 @@ async function saveAcct(){
   uc.push({type:'text',text:p});
   if(acctImg){const mt=acctImg.split(';')[0].split(':')[1];uc.push({type:'image',source:{type:'base64',media_type:mt,data:acctImg.split(',')[1]}});}
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:uc}]})});
+    const r=await fetch('https://cleo-api.axdg-cleo.workers.dev',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,messages:[{role:'user',content:uc}]})});
     const d=await r.json();const raw=d.content?.find(c=>c.type==='text')?.text||'{}'
     let pr={};try{pr=JSON.parse(raw.replace(/```json|```/g,'').trim());}catch(e){}
     savedAccts.unshift({id:Date.now(),platform:pr.platform||(url.includes('instagram')?'ig':url.includes('xiaohongshu')?'xhs':'other'),handle:pr.handle||url||'未知帳號',display_name:pr.display_name||'',bio_summary:pr.bio_summary||'',content_style:pr.content_style||'',followers_estimate:pr.followers_estimate||'',url,note,tags:[...acctTags],thumbnail:acctImg,saved_at:new Date().toLocaleDateString('zh-TW')});
